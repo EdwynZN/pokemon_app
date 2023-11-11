@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pokemon_go/assets/pokemon_icons.dart';
 import 'package:pokemon_go/controller/pokemon_details_provider.dart';
+import 'package:pokemon_go/domain/failure.dart';
 import 'package:pokemon_go/domain/pokemon/model/pokemon.dart';
 import 'package:pokemon_go/infrastructure/cache_manager.dart';
 import 'package:pokemon_go/presentation/widget/bloc_sliver.dart';
@@ -50,10 +52,16 @@ class PokemonDetailsScreen extends HookConsumerWidget {
       ],
       error: (error, stackTrace) {
         return [
-          ErrorHeader(
-            title: 'Error al cargar',
-            onPressed: () => ref.invalidate(pokemonDetailsProvider(id: id)),
-          )
+          if (error is ItemFailure)
+            ErrorHeader(
+              title: 'There is no information of this pokemon in our pokedex',
+              onPressed: () => GoRouter.of(context).go('/'),
+            )
+          else
+            ErrorHeader(
+              title: 'There is a problem fetching this pokemon, try again',
+              onPressed: () => ref.invalidate(pokemonDetailsProvider(id: id)),
+            )
         ];
       },
       data: (data) => [

@@ -15,6 +15,13 @@ class ItemFailure extends DomainFailure with _$ItemFailure {
 }
 
 @freezed
+class UnknownFailure extends DomainFailure with _$UnknownFailure {
+  const factory UnknownFailure({
+    required Object error,
+  }) = _UnknownFailure;
+}
+
+@freezed
 class NetworkFailure extends DomainFailure with _$NetworkFailure {
   const factory NetworkFailure.request({
     required String message,

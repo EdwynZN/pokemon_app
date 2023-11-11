@@ -150,6 +150,120 @@ abstract class _ItemFailure implements ItemFailure {
 }
 
 /// @nodoc
+mixin _$UnknownFailure {
+  Object get error => throw _privateConstructorUsedError;
+
+  @JsonKey(ignore: true)
+  $UnknownFailureCopyWith<UnknownFailure> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $UnknownFailureCopyWith<$Res> {
+  factory $UnknownFailureCopyWith(
+          UnknownFailure value, $Res Function(UnknownFailure) then) =
+      _$UnknownFailureCopyWithImpl<$Res, UnknownFailure>;
+  @useResult
+  $Res call({Object error});
+}
+
+/// @nodoc
+class _$UnknownFailureCopyWithImpl<$Res, $Val extends UnknownFailure>
+    implements $UnknownFailureCopyWith<$Res> {
+  _$UnknownFailureCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_value.copyWith(
+      error: null == error ? _value.error : error,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$UnknownFailureImplCopyWith<$Res>
+    implements $UnknownFailureCopyWith<$Res> {
+  factory _$$UnknownFailureImplCopyWith(_$UnknownFailureImpl value,
+          $Res Function(_$UnknownFailureImpl) then) =
+      __$$UnknownFailureImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({Object error});
+}
+
+/// @nodoc
+class __$$UnknownFailureImplCopyWithImpl<$Res>
+    extends _$UnknownFailureCopyWithImpl<$Res, _$UnknownFailureImpl>
+    implements _$$UnknownFailureImplCopyWith<$Res> {
+  __$$UnknownFailureImplCopyWithImpl(
+      _$UnknownFailureImpl _value, $Res Function(_$UnknownFailureImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? error = null,
+  }) {
+    return _then(_$UnknownFailureImpl(
+      error: null == error ? _value.error : error,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$UnknownFailureImpl implements _UnknownFailure {
+  const _$UnknownFailureImpl({required this.error});
+
+  @override
+  final Object error;
+
+  @override
+  String toString() {
+    return 'UnknownFailure(error: $error)';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UnknownFailureImpl &&
+            const DeepCollectionEquality().equals(other.error, error));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(error));
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UnknownFailureImplCopyWith<_$UnknownFailureImpl> get copyWith =>
+      __$$UnknownFailureImplCopyWithImpl<_$UnknownFailureImpl>(
+          this, _$identity);
+}
+
+abstract class _UnknownFailure implements UnknownFailure {
+  const factory _UnknownFailure({required final Object error}) =
+      _$UnknownFailureImpl;
+
+  @override
+  Object get error;
+  @override
+  @JsonKey(ignore: true)
+  _$$UnknownFailureImplCopyWith<_$UnknownFailureImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$NetworkFailure {
   String get message => throw _privateConstructorUsedError;
   int get statusCode => throw _privateConstructorUsedError;

@@ -86,7 +86,7 @@ class _PokemonListView extends ConsumerWidget {
         );
       } else if (state.hasError) {
         return ErrorHeader(
-          title: 'Error al cargar',
+          title: 'There is a problem fetching all the pokemons, try again',
           onPressed: () => ref.invalidate(pokemonPageProvider),
         );
       }
