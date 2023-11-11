@@ -7,6 +7,7 @@ import 'package:pokemon_go/assets/pokemon_icons.dart';
 import 'package:pokemon_go/controller/pokemon_list_provider.dart';
 import 'package:pokemon_go/domain/pokemon/model/pokemon_shallow.dart';
 import 'package:pokemon_go/presentation/widget/error_header.dart';
+import 'package:pokemon_go/utils/constraints.dart';
 import 'package:pokemon_go/utils/string_extensions.dart';
 
 void _usePagination({
@@ -123,8 +124,31 @@ class _PokemonListView extends ConsumerWidget {
                       label: const Text('Reintentar'),
                     ),
                   );
+                } else if ((pokemons?.isEmpty ?? false) && index == 0) {
+                return Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.only(top: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        const Image(
+                          image: AssetImage(PokemonIcons.pokeball),
+                          height: 72.0,
+                          width: 72.0,
+                        ),
+                        gap24,
+                        Text(
+                          'There are no pokemons to catch!',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
                 }
-              }
+              } 
               return null;
             },
           ),
