@@ -15,21 +15,22 @@ class BlockSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onBackground = Theme.of(context).colorScheme.onSurfaceVariant;
     return MultiSliver(
       children: [
         SliverToBoxAdapter(
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18.0,
               height: 1.3,
               letterSpacing: 0.25,
-              color: Colors.black,
+              color: onBackground,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        const SliverDivider(height: 16.0, thickness: 0.5, color: Colors.black),
+        SliverDivider(height: 16.0, thickness: 0.5, color: onBackground),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
           sliver: sliver,
