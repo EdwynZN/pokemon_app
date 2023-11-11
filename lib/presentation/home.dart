@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pokemon_go/assets/pokemon_icons.dart';
 import 'package:pokemon_go/controller/pokemon_list_provider.dart';
 import 'package:pokemon_go/domain/pokemon/model/pokemon_shallow.dart';
+import 'package:pokemon_go/presentation/widget/error_header.dart';
 import 'package:pokemon_go/utils/string_extensions.dart';
 
 void _usePagination({
@@ -70,17 +71,24 @@ class _PokemonListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(pokemonPageProvider);
-    if (state.isLoading && !state.hasValue) {
-      final theme = Theme.of(context).colorScheme;
-      return SliverFillRemaining(
-        hasScrollBody: false,
-        child: Center(
-          child: SpinKitDoubleBounce(
-            color: theme.primary,
-            size: 72.0,
+    if (!state.hasValue) {
+      if (state.isLoading) {
+        final theme = Theme.of(context);
+        return SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: SpinKitDoubleBounce(
+              color: theme.colorScheme.primary,
+              size: 72.0,
+            ),
           ),
-        ),
-      );
+        );
+      } else if (state.hasError) {
+        return ErrorHeader(
+          title: 'Error al cargar',
+          onPressed: () => ref.invalidate(pokemonPageProvider),
+        );
+      }
     }
     final pokemons = state.valueOrNull;
     bool isValid = pokemons != null && pokemons.isNotEmpty;
@@ -94,17 +102,28 @@ class _PokemonListView extends ConsumerWidget {
               if (isValid && index < pokemons.length) {
                 final pokemon = pokemons[index];
                 return _PokemonTile(pokemon: pokemon);
-              } else if (state.hasError) {
-                return Align(
-                  alignment: Alignment.bottomCenter,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      ref.read(pokemonPageProvider.notifier).retrieveNextPage();
-                    },
-                    icon: const Icon(Icons.restart_alt_outlined),
-                    label: const Text('Reintentar'),
-                  ),
-                );
+              }
+              if (index == (pokemons?.length ?? 1)) {
+                if (state.isLoading) {
+                  return const Align(
+                    alignment: Alignment.bottomCenter,
+                    child: LinearProgressIndicator(),
+                  );
+                } else if (state.hasError) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    alignment: Alignment.bottomCenter,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        ref
+                            .read(pokemonPageProvider.notifier)
+                            .retrieveNextPage();
+                      },
+                      icon: const Icon(Icons.restart_alt_outlined),
+                      label: const Text('Reintentar'),
+                    ),
+                  );
+                }
               }
               return null;
             },

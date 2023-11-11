@@ -6,6 +6,7 @@ import 'package:pokemon_go/controller/pokemon_details_provider.dart';
 import 'package:pokemon_go/domain/pokemon/model/pokemon.dart';
 import 'package:pokemon_go/infrastructure/cache_manager.dart';
 import 'package:pokemon_go/presentation/widget/bloc_sliver.dart';
+import 'package:pokemon_go/presentation/widget/error_header.dart';
 import 'package:pokemon_go/presentation/widget/type_chip.dart';
 import 'package:pokemon_go/utils/constraints.dart';
 import 'package:pokemon_go/utils/string_extensions.dart';
@@ -48,8 +49,11 @@ class PokemonDetailsScreen extends HookConsumerWidget {
         ),
       ],
       error: (error, stackTrace) {
-        return const [
-          SliverToBoxAdapter(),
+        return [
+          ErrorHeader(
+            title: 'Error al cargar',
+            onPressed: () => ref.invalidate(pokemonDetailsProvider(id: id)),
+          )
         ];
       },
       data: (data) => [
@@ -407,11 +411,10 @@ class _AbilitiesSiLiver extends HookWidget {
           decoration: ShapeDecoration(
             color: theme.colorScheme.secondaryContainer,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(24.0))
-            ),
+                borderRadius: BorderRadius.all(Radius.circular(24.0))),
           ),
           sliver: SliverPadding(
-          padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(12.0),
             sliver: SliverList.builder(
               itemBuilder: (context, index) {
                 final ability = abilities[index];
@@ -455,8 +458,7 @@ class _MovesSiLiver extends HookWidget {
           decoration: ShapeDecoration(
             color: theme.colorScheme.secondaryContainer,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(24.0))
-            ),
+                borderRadius: BorderRadius.all(Radius.circular(24.0))),
           ),
           sliver: SliverPadding(
             padding: const EdgeInsets.all(12.0),
