@@ -1,95 +1,392 @@
-/* // This is a basic Flutter widget test.
+// This is a basic Flutter widget test.
 //
 // To perform an interaction with a widget in your test, use the WidgetTester
 // utility that Flutter provides. For example, you can send tap and scroll
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:dio/dio.dart';
+import 'package:dartz/dartz.dart';
+// ignore: depend_on_referenced_packages
+import 'package:file/local.dart' as f;
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/file.dart' as cmf;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:gameshop_deals/main.dart';
-import 'package:gameshop_deals/model/filter.dart';
-import 'package:gameshop_deals/provider/repository_provider.dart';
+import 'package:golden_toolkit/golden_toolkit.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:hive/hive.dart';
+import 'package:pokemon_go/controller/pokemon_list_provider.dart';
+import 'package:pokemon_go/domain/failure.dart';
+import 'package:pokemon_go/domain/pokemon/model/pokemon_shallow.dart';
+import 'package:pokemon_go/domain/pokemon/repository.dart';
+import 'package:pokemon_go/infrastructure/cache_manager.dart';
+import 'package:pokemon_go/main.dart';
+import 'package:pokemon_go/presentation/widget/error_header.dart';
 
-const Map<String, dynamic> defaultFilter = {
-  'pageNumber': 0,
-  'pageSize': 60,
-  'sortBy': 'Deal_Rating',
-  'desc': 0,
-  'lowerPrice': 0,
-  'upperPrice': 50,
-  'metacritic': 0,
-  'steamRating': 0,
-  'AAA': 0,
-  'steamWorks': 0,
-  'onSale': 0
-};
+import 'widget_test.mocks.dart';
 
-class DioAdapterMock extends Mock implements HttpClientAdapter {}
-class HiveFake extends Fake implements HiveInterface {}
-class HiveMock extends Mock implements HiveInterface {}
+class TestCacheManager extends CacheManager {
+  static const fileSystem = f.LocalFileSystem();
+  static final file = fileSystem.file('assets/pokeball.png');
+  final info = FileInfo(
+    file,
+    FileSource.Cache,
+    DateTime(2050),
+    'url',
+  );
+  TestCacheManager() : super(Config('cacheKey'));
 
+  @override
+  Future<void> dispose() async {}
+
+  @override
+  Future<FileInfo> downloadFile(
+    String url, {
+    String? key,
+    Map<String, String>? authHeaders,
+    bool force = false,
+  }) async {
+    return info;
+  }
+
+  @override
+  Future<void> emptyCache() async {}
+
+  @override
+  Stream<FileInfo> getFile(
+    String url, {
+    String? key = '',
+    Map<String, String>? headers = const {},
+  }) async* {
+    yield info;
+  }
+
+  @override
+  Future<FileInfo?> getFileFromCache(
+    String key, {
+    bool ignoreMemCache = false,
+  }) async {
+    return info;
+  }
+
+  @override
+  Future<FileInfo?> getFileFromMemory(String key) async {
+    return info;
+  }
+
+  @override
+  Stream<FileResponse> getFileStream(
+    String url, {
+    String? key,
+    Map<String, String>? headers,
+    bool withProgress = true,
+  }) async* {
+    yield info;
+  }
+
+  @override
+  Future<cmf.File> getSingleFile(
+    String url, {
+    String? key = '',
+    Map<String, String>? headers = const {},
+  }) async {
+    return file;
+  }
+
+  @override
+  Future<cmf.File> putFile(
+    String url,
+    Uint8List fileBytes, {
+    String? key,
+    String? eTag,
+    Duration maxAge = const Duration(days: 30),
+    String fileExtension = 'file',
+  }) async {
+    return file;
+  }
+
+  @override
+  Future<cmf.File> putFileStream(
+    String url,
+    Stream<List<int>> source, {
+    String? key,
+    String? eTag,
+    Duration maxAge = const Duration(days: 30),
+    String fileExtension = 'file',
+  }) async {
+    return file;
+  }
+
+  @override
+  Future<void> removeFile(String key) async {}
+}
+
+@GenerateMocks([PokemonRepository])
 void main() async {
-  test('Test Freezed filter model', () {
-    Filter filter = Filter();
-    Filter filterTest = Filter(
-        storeId: <String>{'1', '2', '3'}, onlyRetail: true, steamWorks: true);
-    Filter filterTest2 = Filter(storeId: <String>{});
-
-    Filter filterTest3 = filterTest.copyWith(storeId: <String>{});
-
-    print(filterTest);
-    print(filterTest.toJson());
-    print(Filter.fromJson(defaultFilter));
-    print(filterTest.parameters);
-    print(filterTest3.parameters);
-
-    expect(filterTest2, filter);
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
   });
 
-  group('Test GameApp', () async {
-    final Dio dio = Dio();
-    DioAdapterMock dioAdapterMock;
+  group('Test GameApp Home', () {
+    late final MockPokemonRepository repository;
 
-    setUpAll(() {
-      dioAdapterMock = DioAdapterMock();
-      dio.httpClientAdapter = dioAdapterMock;
+    setUpAll(() async {
+      await loadAppFonts();
+      repository = MockPokemonRepository();
     });
 
-    testWidgets('Test Receiving deals', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
+    testWidgets(
+      'Test Home list',
+      (WidgetTester tester) async {
+        debugDisableShadows = false;
+        tester.view.devicePixelRatio = 3;
+        tester.view.physicalSize = const Size(1170, 2532);
+        final container = ProviderContainer(
           overrides: [
-            dioInstanceProvider.overrideWithValue(dio),
-            
+            cacheManagerProvider(cacheKey: 'Pokemon').overrideWith(
+              (provider) => TestCacheManager(),
+            ),
+            pokemonRepositoryProvider.overrideWith((ref) => repository),
           ],
-          child: GameShop()
-        )
-      );
+        );
 
-    });
-  });
+        when(repository.getPage(
+          offset: anyNamed('offset'),
+          limit: anyNamed('limit'),
+        )).thenAnswer(
+          (Invocation invocation) => Future.delayed(
+            const Duration(seconds: 4),
+            () => right(
+              List.generate(
+                invocation.namedArguments[#limit],
+                (index) => PokemonShallow(name: 'name$index', id: index),
+              ),
+            ),
+          ),
+        );
 
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(GameShop());
+        await tester.pumpWidget(UncontrolledProviderScope(
+          container: container,
+          child: const PokemonGoApp(),
+        ));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+        expect(find.byType(SpinKitDoubleBounce), findsOneWidget);
+        expect(
+          container.read(pokemonPageProvider),
+          const AsyncValue<List<PokemonShallow>>.loading(),
+        );
+        await tester.pump(const Duration(seconds: 5));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+        verifyNever(repository.getDetail(id: anyNamed('id')));
+        verify(repository.getPage(
+          limit: anyNamed('limit'),
+          offset: anyNamed('offset'),
+        )).called(1);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+        expect(
+          container.read(pokemonPageProvider),
+          isA<AsyncData<List<PokemonShallow>>>(),
+        );
+
+        await tester.pumpAndSettle();
+        await expectLater(
+          find.byType(MaterialApp),
+          matchesGoldenFile('goldens/widget_home.png'),
+        );
+        debugDisableShadows = true;
+      },
+    );
+
+    testWidgets(
+      'Test Home Pagination',
+      (WidgetTester tester) async {
+        debugDisableShadows = false;
+        tester.view.devicePixelRatio = 3;
+        tester.view.physicalSize = const Size(1170, 2532);
+        final container = ProviderContainer(
+          overrides: [
+            cacheManagerProvider(cacheKey: 'Pokemon').overrideWith(
+              (provider) => TestCacheManager(),
+            ),
+            pokemonRepositoryProvider.overrideWith((ref) => repository),
+          ],
+        );
+
+        when(repository.getPage(
+          offset: anyNamed('offset'),
+          limit: anyNamed('limit'),
+        )).thenAnswer(
+          (Invocation invocation) => Future.delayed(
+            const Duration(seconds: 4),
+            () {
+              final int offset = invocation.namedArguments[#offset];
+              return right(
+                List.generate(
+                  invocation.namedArguments[#limit],
+                  (index) => PokemonShallow(
+                    name: 'name${index + offset}',
+                    id: index + offset,
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+
+        await tester.pumpWidget(UncontrolledProviderScope(
+          container: container,
+          child: const PokemonGoApp(),
+        ));
+
+        expect(find.byType(SpinKitDoubleBounce), findsOneWidget);
+        expect(
+          container.read(pokemonPageProvider),
+          const AsyncValue<List<PokemonShallow>>.loading(),
+        );
+        await tester.pump(const Duration(seconds: 5));
+        verifyNever(repository.getDetail(id: anyNamed('id')));
+
+        expect(
+          container.read(pokemonPageProvider),
+          isA<AsyncData<List<PokemonShallow>>>().having(
+            (p0) => p0.value,
+            'first page',
+            hasLength(60),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('#59'),
+          400,
+          scrollable: find.byType(Scrollable),
+          duration: const Duration(milliseconds: 300),
+        );
+        //await tester.fling(find.text('#40'), const Offset(0, 100), 500);
+
+        await tester.pump();
+        expect(
+          container.read(pokemonPageProvider),
+          isA<AsyncLoading<List<PokemonShallow>>>(),
+        );
+        await tester.pumpAndSettle(const Duration(seconds: 5));
+
+        verify(repository.getPage(
+          limit: anyNamed('limit'),
+          offset: anyNamed('offset'),
+        )).called(2);
+
+        expect(
+          container.read(pokemonPageProvider),
+          isA<AsyncData<List<PokemonShallow>>>().having(
+            (p0) => p0.value,
+            'second page',
+            hasLength(120),
+          ),
+        );
+
+        await tester.fling(find.text('#59'), const Offset(0, -800), 800);
+        await tester.pumpAndSettle();
+        await expectLater(
+          find.byType(MaterialApp),
+          matchesGoldenFile('goldens/widget_home_scroll.png'),
+        );
+        debugDisableShadows = true;
+      },
+    );
+
+    testWidgets(
+      'Test Home Netork error',
+      (WidgetTester tester) async {
+        debugDisableShadows = false;
+        tester.view.devicePixelRatio = 3;
+        tester.view.physicalSize = const Size(1170, 2532);
+        final container = ProviderContainer(
+          overrides: [
+            cacheManagerProvider(cacheKey: 'Pokemon').overrideWith(
+              (provider) => TestCacheManager(),
+            ),
+            pokemonRepositoryProvider.overrideWith((ref) => repository),
+          ],
+        );
+
+        when(repository.getPage(
+          offset: anyNamed('offset'),
+          limit: anyNamed('limit'),
+        )).thenAnswer(
+          (_) => Future.delayed(
+            const Duration(seconds: 4),
+            () => throw const NetworkFailure.server(
+              message: 'timeout',
+              statusCode: 500,
+            ),
+          ),
+        );
+
+        await tester.pumpWidget(UncontrolledProviderScope(
+          container: container,
+          child: const PokemonGoApp(),
+        ));
+
+        expect(find.byType(SpinKitDoubleBounce), findsOneWidget);
+        expect(
+          container.read(pokemonPageProvider),
+          const AsyncValue<List<PokemonShallow>>.loading(),
+        );
+        await tester.pump(const Duration(seconds: 5));
+        expect(
+          container.read(pokemonPageProvider),
+          isA<AsyncError<List<PokemonShallow>>>(),
+        );
+
+        verify(repository.getPage(
+          limit: anyNamed('limit'),
+          offset: anyNamed('offset'),
+        )).called(1);
+
+        await tester.pumpAndSettle();
+        expect(find.byType(ErrorHeader), findsOneWidget);
+        await expectLater(
+          find.byType(MaterialApp),
+          matchesGoldenFile('goldens/widget_error_home.png'),
+        );
+
+        reset(repository);
+
+        when(repository.getPage(
+          offset: anyNamed('offset'),
+          limit: anyNamed('limit'),
+        )).thenAnswer(
+          (Invocation invocation) => Future.delayed(
+            const Duration(seconds: 4),
+            () => right(
+              List.generate(
+                invocation.namedArguments[#limit],
+                (index) => PokemonShallow(name: 'name$index', id: index),
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.byIcon(Icons.refresh_outlined));
+        await tester.pumpAndSettle(const Duration(seconds: 5));
+
+        verifyNever(repository.getDetail(id: anyNamed('id')));
+        expect(
+          container.read(pokemonPageProvider),
+          isA<AsyncData<List<PokemonShallow>>>(),
+        );
+
+        verify(repository.getPage(
+          limit: anyNamed('limit'),
+          offset: anyNamed('offset'),
+        )).called(1);
+
+        debugDisableShadows = true;
+      },
+    );
   });
 }
- */
