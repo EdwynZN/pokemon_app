@@ -162,7 +162,9 @@ void main() async {
             () => right(
               List.generate(
                 invocation.namedArguments[#limit],
-                (index) => PokemonShallow(name: 'name$index', id: index),
+                (index) => PokemonShallow(
+                  name: 'name$index', id: index, image: '$index',
+                ),
               ),
             ),
           ),
@@ -229,6 +231,7 @@ void main() async {
                   (index) => PokemonShallow(
                     name: 'name${index + offset}',
                     id: index + offset,
+                    image: '${index + offset}',
                   ),
                 ),
               );
@@ -365,7 +368,11 @@ void main() async {
             () => right(
               List.generate(
                 invocation.namedArguments[#limit],
-                (index) => PokemonShallow(name: 'name$index', id: index),
+                (index) => PokemonShallow(
+                  name: 'name$index',
+                  id: index,
+                  image: '$index',
+                ),
               ),
             ),
           ),

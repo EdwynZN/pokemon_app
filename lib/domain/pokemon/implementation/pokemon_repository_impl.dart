@@ -55,7 +55,13 @@ final class PokemonRemoteRepository implements PokemonRepository {
         if (id == null) {
           return Left(ItemFailure(message: 'No ID', name: name));
         }
-        pokemons.add(PokemonShallow(name: name, id: id));
+        pokemons.add(
+          PokemonShallow(
+            name: name,
+            id: id,
+            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/$id.png'
+          ),
+        );
       }
       return Right(pokemons);
     } on DioException catch (e) {

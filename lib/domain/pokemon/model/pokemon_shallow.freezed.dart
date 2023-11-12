@@ -20,8 +20,9 @@ PokemonShallow _$PokemonShallowFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PokemonShallow {
-  String get name => throw _privateConstructorUsedError;
   int get id => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  String get image => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -35,7 +36,7 @@ abstract class $PokemonShallowCopyWith<$Res> {
           PokemonShallow value, $Res Function(PokemonShallow) then) =
       _$PokemonShallowCopyWithImpl<$Res, PokemonShallow>;
   @useResult
-  $Res call({String name, int id});
+  $Res call({int id, String name, String image});
 }
 
 /// @nodoc
@@ -51,18 +52,23 @@ class _$PokemonShallowCopyWithImpl<$Res, $Val extends PokemonShallow>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? name = null,
     Object? id = null,
+    Object? name = null,
+    Object? image = null,
   }) {
     return _then(_value.copyWith(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      image: null == image
+          ? _value.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -75,7 +81,7 @@ abstract class _$$PokemonShallowImplCopyWith<$Res>
       __$$PokemonShallowImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, int id});
+  $Res call({int id, String name, String image});
 }
 
 /// @nodoc
@@ -89,18 +95,23 @@ class __$$PokemonShallowImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? name = null,
     Object? id = null,
+    Object? name = null,
+    Object? image = null,
   }) {
     return _then(_$PokemonShallowImpl(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as int,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      image: null == image
+          ? _value.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -108,19 +119,22 @@ class __$$PokemonShallowImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$PokemonShallowImpl implements _PokemonShallow {
-  const _$PokemonShallowImpl({required this.name, required this.id});
+  const _$PokemonShallowImpl(
+      {required this.id, required this.name, required this.image});
 
   factory _$PokemonShallowImpl.fromJson(Map<String, dynamic> json) =>
       _$$PokemonShallowImplFromJson(json);
 
   @override
+  final int id;
+  @override
   final String name;
   @override
-  final int id;
+  final String image;
 
   @override
   String toString() {
-    return 'PokemonShallow(name: $name, id: $id)';
+    return 'PokemonShallow(id: $id, name: $name, image: $image)';
   }
 
   @override
@@ -128,13 +142,14 @@ class _$PokemonShallowImpl implements _PokemonShallow {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PokemonShallowImpl &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.id, id) || other.id == id));
+            (identical(other.image, image) || other.image == image));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, name, id);
+  int get hashCode => Object.hash(runtimeType, id, name, image);
 
   @JsonKey(ignore: true)
   @override
@@ -153,16 +168,19 @@ class _$PokemonShallowImpl implements _PokemonShallow {
 
 abstract class _PokemonShallow implements PokemonShallow {
   const factory _PokemonShallow(
-      {required final String name,
-      required final int id}) = _$PokemonShallowImpl;
+      {required final int id,
+      required final String name,
+      required final String image}) = _$PokemonShallowImpl;
 
   factory _PokemonShallow.fromJson(Map<String, dynamic> json) =
       _$PokemonShallowImpl.fromJson;
 
   @override
+  int get id;
+  @override
   String get name;
   @override
-  int get id;
+  String get image;
   @override
   @JsonKey(ignore: true)
   _$$PokemonShallowImplCopyWith<_$PokemonShallowImpl> get copyWith =>

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -6,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pokemon_go/assets/pokemon_icons.dart';
 import 'package:pokemon_go/controller/pokemon_list_provider.dart';
 import 'package:pokemon_go/domain/pokemon/model/pokemon_shallow.dart';
+import 'package:pokemon_go/infrastructure/cache_manager.dart';
 import 'package:pokemon_go/presentation/widget/error_header.dart';
 import 'package:pokemon_go/utils/constraints.dart';
 import 'package:pokemon_go/utils/string_extensions.dart';
@@ -125,7 +127,7 @@ class _PokemonListView extends ConsumerWidget {
                     ),
                   );
                 } else if ((pokemons?.isEmpty ?? false) && index == 0) {
-                return Container(
+                  return Container(
                     alignment: Alignment.center,
                     padding: const EdgeInsets.only(top: 24),
                     child: Column(
@@ -148,7 +150,7 @@ class _PokemonListView extends ConsumerWidget {
                     ),
                   );
                 }
-              } 
+              }
               return null;
             },
           ),
@@ -183,10 +185,23 @@ class _PokemonTile extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(8.0)),
           side: BorderSide(color: scheme.onSurface),
         ),
-        leading: const Image(
-          image: AssetImage(PokemonIcons.pokeball),
-          height: 32.0,
-          width: 32.0,
+        leading: Consumer(
+          builder: (context, ref, child) {
+            final manager = ref.watch(cacheManagerProvider(cacheKey: 'Pokemon'));
+            return CachedNetworkImage(
+              height: 48.0,
+              width: 48.0,
+              memCacheHeight: 48,
+              memCacheWidth: 48,
+              imageUrl: pokemon.image,
+              cacheManager: manager,
+              placeholder: (context, url) => const Image(
+                image: AssetImage(PokemonIcons.pokeball),
+                height: 32.0,
+                width: 32.0,
+              ),
+            );
+          },
         ),
         minLeadingWidth: 4.0,
         title: Text(

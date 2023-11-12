@@ -8,13 +8,15 @@ part of 'pokemon_shallow.dart';
 
 _$PokemonShallowImpl _$$PokemonShallowImplFromJson(Map<String, dynamic> json) =>
     _$PokemonShallowImpl(
-      name: json['name'] as String,
       id: json['id'] as int,
+      name: json['name'] as String,
+      image: json['image'] as String,
     );
 
 Map<String, dynamic> _$$PokemonShallowImplToJson(
         _$PokemonShallowImpl instance) =>
     <String, dynamic>{
-      'name': instance.name,
       'id': instance.id,
+      'name': instance.name,
+      'image': instance.image,
     };
