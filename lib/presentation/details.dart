@@ -580,7 +580,7 @@ class _ImageGallerySheet extends StatelessWidget {
                           height: 150,
                           width: 150,
                           memCacheWidth: 150,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                           alignment: Alignment.center,
                           cacheManager: manager,
                           imageUrl: image,
