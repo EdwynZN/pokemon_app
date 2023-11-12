@@ -9,6 +9,7 @@ import 'package:pokemon_go/domain/pokemon/model/pokemon.dart';
 import 'package:pokemon_go/infrastructure/cache_manager.dart';
 import 'package:pokemon_go/presentation/widget/bloc_sliver.dart';
 import 'package:pokemon_go/presentation/widget/error_header.dart';
+import 'package:pokemon_go/presentation/widget/page_indicator.dart';
 import 'package:pokemon_go/presentation/widget/type_chip.dart';
 import 'package:pokemon_go/utils/constraints.dart';
 import 'package:pokemon_go/utils/string_extensions.dart';
@@ -66,11 +67,26 @@ class PokemonDetailsScreen extends HookConsumerWidget {
       },
       data: (data) => [
         _DetailPokemonCard(
-          image: data.sprite.front,
           id: id,
+          image: data.sprite.front,
           pokemnoHeight: data.height,
           pokemnoWeight: data.weight,
           xp: data.baseExperience,
+          images: [
+            data.sprite.back,
+            if (data.femaleSprite != null) ...[
+              data.femaleSprite!.front,
+              data.femaleSprite!.back,
+            ],
+            if (data.shinySprite != null) ...[
+              data.shinySprite!.front,
+              data.shinySprite!.back,
+            ],
+            if (data.shinyFemaleSprite != null) ...[
+              data.shinyFemaleSprite!.front,
+              data.shinyFemaleSprite!.back,
+            ],
+          ],
         ),
         const SliverToBoxAdapter(child: gap8),
         _TypesWidget(types: data.types),
@@ -155,6 +171,7 @@ class _TypesWidget extends HookWidget {
 }
 
 class _DetailPokemonCard extends StatelessWidget {
+  final List<String> images;
   final String image;
   final int id;
   final int pokemnoHeight;
@@ -164,6 +181,7 @@ class _DetailPokemonCard extends StatelessWidget {
   const _DetailPokemonCard({
     // ignore: unused_element
     super.key,
+    this.images = const [],
     required this.image,
     required this.id,
     required this.pokemnoHeight,
@@ -195,6 +213,37 @@ class _DetailPokemonCard extends StatelessWidget {
                 cacheManagerProvider(cacheKey: 'Pokemon'),
               ),
               imageUrl: image,
+              imageBuilder: images.isEmpty
+                  ? null
+                  : (context, imageProvider) {
+                      final color =
+                          Theme.of(context).colorScheme.primaryContainer;
+                      return Ink.image(
+                        image: imageProvider,
+                        fit: BoxFit.contain,
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          highlightColor: Colors.transparent,
+                          splashColor: color.withOpacity(0.12),
+                          onTap: () async {
+                            await showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              isDismissible: true,
+                              elevation: 4.0,
+                              enableDrag: true,
+                              constraints: const BoxConstraints.tightFor(
+                                height: 400.0,
+                              ),
+                              showDragHandle: true,
+                              builder: (_) => _ImageGallerySheet(
+                                images: [image, ...images],
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
               placeholder: (_, __) => const Center(
                 child: Image(
                   image: AssetImage(PokemonIcons.pokeball),
@@ -490,6 +539,71 @@ class _MovesSiLiver extends HookWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ImageGallerySheet extends StatelessWidget {
+  final List<String> images;
+
+  _ImageGallerySheet({
+    // ignore: unused_element
+    super.key,
+    required this.images,
+  }) : assert(images.isNotEmpty);
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      expand: false,
+      maxChildSize: 1,
+      initialChildSize: 1,
+      builder: (context, scrollController) {
+        return HookConsumer(
+          builder: (context, ref, _) {
+            final controller = usePageController(keys: const []);
+            final manager = ref.watch(
+              cacheManagerProvider(cacheKey: 'Pokemon'),
+            );
+            return SafeArea(
+              top: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: PageView.builder(
+                      controller: controller,
+                      itemBuilder: (context, index) {
+                        final image = images[index];
+                        return CachedNetworkImage(
+                          memCacheHeight: 150,
+                          height: 150,
+                          width: 150,
+                          memCacheWidth: 150,
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          cacheManager: manager,
+                          imageUrl: image,
+                          placeholder: (_, __) => const Center(
+                            child: Image(
+                              image: AssetImage(PokemonIcons.pokeball),
+                              height: 32.0,
+                              width: 32.0,
+                            ),
+                          ),
+                        );
+                      },
+                      itemCount: images.length,
+                    ),
+                  ),
+                  gap8,
+                  PageIndicator(controller: controller, count: images.length),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
