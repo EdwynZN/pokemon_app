@@ -15,7 +15,7 @@ class PageIndicator extends HookWidget {
   Widget build(BuildContext context) {
     final selected = useListenableSelector(
       controller,
-      () => controller.page?.toInt() ?? 0,
+      () => controller.page?.round() ?? 0,
     );
     final primary = Theme.of(context).colorScheme.primary;
     return Row(
